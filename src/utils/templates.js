@@ -1,4 +1,4 @@
-// Prompt template processing utilities
+// This file handles the prompt templates we send to GPT-4
 
 /**
  * Apply template with variable substitution

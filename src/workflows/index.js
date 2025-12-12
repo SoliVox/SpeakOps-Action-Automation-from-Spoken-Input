@@ -1,5 +1,5 @@
-// Example workflow implementations
-// Import these in server.js to enable specific workflows
+// These are the actual workflow implementations
+// Each one takes voice input and does something useful with it
 
 import { createWordPressPost, createNotionPage, createAsanaTask, retryWithBackoff } from "../utils/integrations.js";
 import { applyTemplate, TEMPLATES, extractDates } from "../utils/templates.js";
@@ -18,8 +18,8 @@ export async function workflowBlogPost(prompt, noteId) {
     maxTokens: 2500,
   });
   
-  // Extract title and content (simple heuristic)
-  const lines = llmResponse.split('\n').filter(l => l.trim());
+  // Pull out the title from the first line (usually starts with #)
+  const lines = blogContent.split('\n').filter(l => l.trim());
   const title = lines[0].replace(/^#\s*/, '').replace(/<\/?[^>]+(>|$)/g, '').slice(0, 100);
   const content = llmResponse;
   
@@ -96,10 +96,10 @@ export async function workflowMeetingNotes(prompt, noteId) {
     maxTokens: 1500,
   });
   
-  // Extract dates from the prompt
+  // Try to find any dates mentioned (deadlines, next meeting, etc.)
   const dates = extractDates(prompt);
   
-  // Create action items from notes (simple extraction)
+  // Pull out the action items so they're easy to track
   const lines = structuredNotes.split('\n').filter(l => l.includes('-') || l.includes('•'));
   const actionItems = lines.slice(0, 5).map((line, i) => ({
     name: line.replace(/^[-•*]\s*/, '').slice(0, 100),

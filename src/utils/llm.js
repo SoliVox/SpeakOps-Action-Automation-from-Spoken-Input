@@ -1,10 +1,11 @@
-// LLM integration utilities
+// This handles all the GPT-4 API calls
 import OpenAI from "openai";
 
 let openaiClient = null;
 
 /**
- * Initialize OpenAI client (lazy loading)
+ * Creates the OpenAI client when we first need it
+ * No point initializing it if we don't have an API key
  */
 function getOpenAIClient() {
   if (!openaiClient && process.env.OPENAI_API_KEY) {
@@ -16,10 +17,9 @@ function getOpenAIClient() {
 }
 
 /**
- * Call OpenAI Chat API
- * @param {string} prompt - The prompt to send
- * @param {Object} options - Additional options
- * @returns {Promise<string>} The LLM response
+ * Sends a prompt to GPT-4 and gets back the response
+ * Falls back to mock responses if the API key isn't configured
+ * Using gpt-4o-mini by default since it's fast and cheap
  */
 export async function callOpenAI(prompt, options = {}) {
   const client = getOpenAIClient();

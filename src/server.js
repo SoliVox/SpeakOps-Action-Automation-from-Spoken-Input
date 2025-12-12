@@ -55,7 +55,7 @@ app.post("/api/speakspace-action", checkAuth, async (req, res) => {
 
     logger.info("Processing voice note", { note_id: data.note_id });
     
-    // Get workflow type from header or default to generic
+    // Check which workflow the user wants to run - they can specify it in the header
     const workflowType = req.header("X-Workflow-Type") || process.env.DEFAULT_WORKFLOW || "generic";
     
     const processed = await routeWorkflow(workflowType, data.prompt, data.note_id, data.timestamp);

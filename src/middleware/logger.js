@@ -1,10 +1,10 @@
-// Logging and monitoring utilities
+// Handles logging to console and file, plus metrics tracking
 
 import { appendFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
 
 /**
- * Log levels
+ * Standard log levels - pretty self-explanatory
  */
 export const LOG_LEVELS = {
   ERROR: "ERROR",
@@ -14,7 +14,8 @@ export const LOG_LEVELS = {
 };
 
 /**
- * Structured logger
+ * Logger class that outputs JSON logs
+ * Makes it easy to search through logs later
  */
 export class Logger {
   constructor(context = "app") {

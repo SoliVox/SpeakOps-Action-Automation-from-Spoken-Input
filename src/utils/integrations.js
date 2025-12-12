@@ -1,4 +1,4 @@
-// Utility functions for workflow integrations
+// These are helper functions for connecting to external services like WordPress and Notion
 
 /**
  * WordPress REST API integration
