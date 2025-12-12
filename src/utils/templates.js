@@ -51,7 +51,7 @@ Voice note: $PROMPT
 
 Return only valid JSON array.`,
 
-  meeting notes: `Summarize this meeting voice note into structured notes:
+  meetingNotes: `Summarize this meeting voice note into structured notes:
 - Key decisions made
 - Action items with owners
 - Important dates/deadlines

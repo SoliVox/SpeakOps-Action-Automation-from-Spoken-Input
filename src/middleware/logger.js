@@ -1,7 +1,7 @@
 // Logging and monitoring utilities
 
-import { appendFile } from "fs/promises";
-import { join } from "path";
+import { appendFile, mkdir } from "fs/promises";
+import { join, dirname } from "path";
 
 /**
  * Log levels
@@ -45,6 +45,7 @@ export class Logger {
     // File logging (optional)
     if (this.logFile) {
       try {
+        await mkdir(dirname(this.logFile), { recursive: true });
         await appendFile(this.logFile, JSON.stringify(logEntry) + "\n");
       } catch (err) {
         console.error("Failed to write log file:", err);

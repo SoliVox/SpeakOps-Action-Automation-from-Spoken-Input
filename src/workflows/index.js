@@ -1,8 +1,8 @@
 // Example workflow implementations
 // Import these in server.js to enable specific workflows
 
-import { createWordPressPost, createNotionPage, createAsanaTask, retryWithBackoff } from "./integrations.js";
-import { applyTemplate, TEMPLATES, safeJsonParse, extractDates } from "./templates.js";
+import { createWordPressPost, createNotionPage, createAsanaTask, retryWithBackoff } from "../utils/integrations.js";
+import { applyTemplate, TEMPLATES, safeJsonParse, extractDates } from "../utils/templates.js";
 
 /**
  * Workflow: Voice note to WordPress blog post
@@ -78,7 +78,7 @@ export async function workflowTaskExtraction(prompt, noteId) {
  */
 export async function workflowMeetingNotes(prompt, noteId) {
   // Apply meeting notes template
-  const enrichedPrompt = applyTemplate(TEMPLATES["meeting notes"], { PROMPT: prompt });
+  const enrichedPrompt = applyTemplate(TEMPLATES.meetingNotes, { PROMPT: prompt });
   
   // TODO: Call LLM for structured notes
   // const notes = await callLLM(enrichedPrompt);
