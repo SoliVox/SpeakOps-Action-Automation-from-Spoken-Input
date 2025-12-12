@@ -1,16 +1,28 @@
 {
   "name": "speakops-action-automation",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "SpeakOps transforms voice notes into automated actions using custom SpeakSpace workflows",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js"
   },
+  "keywords": ["voice-notes", "automation", "speakspace", "workflows", "ai", "llm"],
+  "author": "SoliVox",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SoliVox/SpeakOps-Action-Automation-from-Spoken-Input.git"
+  },
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^4.19.2",
     "express-rate-limit": "^7.1.5",
+    "openai": "^6.10.0",
     "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

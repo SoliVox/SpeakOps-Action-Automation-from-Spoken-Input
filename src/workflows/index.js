@@ -2,7 +2,8 @@
 // Import these in server.js to enable specific workflows
 
 import { createWordPressPost, createNotionPage, createAsanaTask, retryWithBackoff } from "../utils/integrations.js";
-import { applyTemplate, TEMPLATES, safeJsonParse, extractDates } from "../utils/templates.js";
+import { applyTemplate, TEMPLATES, extractDates } from "../utils/templates.js";
+import { callOpenAI, parseJSONFromLLM, isLLMConfigured } from "../utils/llm.js";
 
 /**
  * Workflow: Voice note to WordPress blog post
@@ -11,14 +12,18 @@ export async function workflowBlogPost(prompt, noteId) {
   // Apply template
   const enrichedPrompt = applyTemplate(TEMPLATES.blogPost, { PROMPT: prompt });
   
-  // TODO: Call your LLM API here (OpenAI, Anthropic, etc.)
-  // const blogContent = await callLLM(enrichedPrompt);
+  // Call LLM to generate blog content
+  const llmResponse = await callOpenAI(enrichedPrompt, {
+    systemPrompt: "You are an expert content writer. Generate SEO-optimized blog posts with proper HTML formatting.",
+    maxTokens: 2500,
+  });
   
-  // Mock response for demo
-  const blogContent = {
-    title: "Blog Post from Voice Note",
-    content: `<h2>Introduction</h2><p>${prompt.slice(0, 200)}</p>`,
-  };
+  // Extract title and content (simple heuristic)
+  const lines = llmResponse.split('\n').filter(l => l.trim());
+  const title = lines[0].replace(/^#\s*/, '').replace(/<\/?[^>]+(>|$)/g, '').slice(0, 100);
+  const content = llmResponse;
+  
+  const blogContent = { title, content };
   
   // Post to WordPress with retry
   if (process.env.WORDPRESS_URL && process.env.WORDPRESS_TOKEN) {
@@ -43,15 +48,20 @@ export async function workflowTaskExtraction(prompt, noteId) {
   // Apply template for task extraction
   const enrichedPrompt = applyTemplate(TEMPLATES.taskList, { PROMPT: prompt });
   
-  // TODO: Call LLM to extract tasks
-  // const llmResponse = await callLLM(enrichedPrompt);
-  // const tasks = safeJsonParse(llmResponse);
+  // Call LLM to extract tasks
+  const llmResponse = await callOpenAI(enrichedPrompt, {
+    systemPrompt: "Extract action items from voice notes and return only valid JSON array. Be precise and specific.",
+    temperature: 0.5,
+  });
   
-  // Mock tasks for demo
-  const tasks = [
-    { task: "Review project proposal", priority: "high", due_date: "2025-12-15" },
-    { task: "Schedule team meeting", priority: "medium", due_date: null },
-  ];
+  // Parse JSON response
+  let tasks = parseJSONFromLLM(llmResponse);
+  
+  // Fallback if parsing fails
+  if (!tasks || !Array.isArray(tasks)) {
+    console.warn("Failed to parse tasks JSON, using fallback");
+    tasks = [{ task: "Review voice note and extract tasks manually", priority: "medium", due_date: null }];
+  }
   
   const results = [];
   if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID) {
@@ -80,16 +90,27 @@ export async function workflowMeetingNotes(prompt, noteId) {
   // Apply meeting notes template
   const enrichedPrompt = applyTemplate(TEMPLATES.meetingNotes, { PROMPT: prompt });
   
-  // TODO: Call LLM for structured notes
-  // const notes = await callLLM(enrichedPrompt);
+  // Call LLM for structured notes
+  const structuredNotes = await callOpenAI(enrichedPrompt, {
+    systemPrompt: "Summarize meeting notes into clear action items with owners and deadlines. Be concise and actionable.",
+    maxTokens: 1500,
+  });
   
   // Extract dates from the prompt
   const dates = extractDates(prompt);
   
-  // Mock action items
-  const actionItems = [
-    { name: "Follow up with client", notes: prompt.slice(0, 100), due_on: dates[0] || null },
-  ];
+  // Create action items from notes (simple extraction)
+  const lines = structuredNotes.split('\n').filter(l => l.includes('-') || l.includes('•'));
+  const actionItems = lines.slice(0, 5).map((line, i) => ({
+    name: line.replace(/^[-•*]\s*/, '').slice(0, 100),
+    notes: structuredNotes.slice(0, 200),
+    due_on: dates[i] || null,
+  }));
+  
+  // Fallback if no items extracted
+  if (actionItems.length === 0) {
+    actionItems.push({ name: "Review meeting notes", notes: structuredNotes.slice(0, 200), due_on: dates[0] || null });
+  }
   
   const results = [];
   if (process.env.ASANA_TOKEN && process.env.ASANA_WORKSPACE_ID) {
@@ -113,14 +134,20 @@ export async function workflowMeetingNotes(prompt, noteId) {
 export async function workflowEmailDraft(prompt, noteId) {
   const enrichedPrompt = applyTemplate(TEMPLATES.emailDraft, { PROMPT: prompt });
   
-  // TODO: Call LLM
-  // const emailContent = await callLLM(enrichedPrompt);
+  // Call LLM to generate email
+  const emailContent = await callOpenAI(enrichedPrompt, {
+    systemPrompt: "Generate professional, well-structured emails. Include appropriate subject line, greeting, body, and closing.",
+    maxTokens: 1000,
+  });
   
-  // Mock email
-  const email = {
-    subject: "RE: Your Request",
-    body: `Hi,\n\n${prompt.slice(0, 150)}\n\nBest regards`,
-  };
+  // Parse email components
+  const subjectMatch = emailContent.match(/Subject:\s*(.+)/i);
+  const subject = subjectMatch ? subjectMatch[1].trim() : "Follow-up";
+  
+  // Remove subject line from body if present
+  const body = emailContent.replace(/Subject:\s*.+\n*/i, '').trim();
+  
+  const email = { subject, body };
   
   // Could integrate with SendGrid, Mailgun, etc.
   console.log("Email draft generated:", email.subject);

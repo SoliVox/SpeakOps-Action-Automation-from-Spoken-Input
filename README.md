@@ -1,6 +1,12 @@
 # SpeakOps-Action-Automation-from-Spoken-Input
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-blue.svg)](https://openai.com)
+
 SpeakOps transforms spoken voice notes into automated actions. Using a custom SpeakSpace Action, it processes note text, extracts key details, and triggers workflows like task updates, content generation, or system actions—turning everyday speech into fast, efficient automation.
+
+**🚀 [Quick Deploy Guide](./DEPLOY_NOW.md)** | **📖 [Full Documentation](#documentation)**
 
 ## Quick Start
 
@@ -90,6 +96,7 @@ curl -X POST "http://localhost:3000/api/speakspace-action" \
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `SS_API_KEY` | Yes | - | API authentication key |
+| `OPENAI_API_KEY` | Recommended | - | OpenAI API key for LLM processing |
 | `PORT` | No | 3000 | Server port |
 | `RATE_LIMIT_PER_MIN` | No | 60 | Max requests per minute |
 | `DEFAULT_WORKFLOW` | No | generic | Default workflow type |
@@ -100,6 +107,8 @@ curl -X POST "http://localhost:3000/api/speakspace-action" \
 | `NOTION_DATABASE_ID` | No | - | Notion database ID |
 | `ASANA_TOKEN` | No | - | Asana access token |
 | `ASANA_WORKSPACE_ID` | No | - | Asana workspace ID |
+
+**Note**: Without `OPENAI_API_KEY`, workflows return mock responses. Get your API key at https://platform.openai.com/api-keys
 
 ## Built-in Workflows
 
@@ -144,8 +153,19 @@ await fetch('https://api.notion.com/v1/pages', {
 
 MIT - see [LICENSE](./LICENSE)
 
-## Submission Resources
+## Documentation
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment guides
-- [SUBMISSION_CHECKLIST.md](./SUBMISSION_CHECKLIST.md) - Hackathon checklist
+- 📋 [ARCHITECTURE.md](./ARCHITECTURE.md) - System design & flow
+- 🚀 [DEPLOYMENT.md](./DEPLOYMENT.md) - Platform deployment guides
+- 🔧 [WORKFLOWS.md](./WORKFLOWS.md) - Workflow configuration
+- ✅ [SUBMISSION_CHECKLIST.md](./SUBMISSION_CHECKLIST.md) - Hackathon checklist
+- 📊 [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Implementation status
+- ⚡ [DEPLOY_NOW.md](./DEPLOY_NOW.md) - Quick Render deployment
+
+## Contributing
+
+Issues and pull requests welcome! See [GitHub repository](https://github.com/SoliVox/SpeakOps-Action-Automation-from-Spoken-Input).
+
+---
+
+**Built with** Express, Zod, OpenAI • **Deployed on** Render • **Made for** SpeakSpace Hackathon 2025
