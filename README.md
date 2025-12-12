@@ -174,3 +174,43 @@ curl -X POST "https://yourservice.com/api/speakspace-action" \
 - Tests + sample curl included.
 - Demo video ready highlighting workflow.
 - Rubric mapping prepared.
+
+## Local setup and run
+- `cp .env.example .env` and set `SS_API_KEY`, `PORT` (optional), `RATE_LIMIT_PER_MIN` (optional).
+- `npm install`
+- `npm run dev` (reloads on change) or `npm start`.
+
+### Endpoints
+- `GET /health` → `{ status: "ok" }`
+- `POST /api/speakspace-action` with headers `Authorization: Bearer <token>` or `x-api-key: <key>` and body:
+```json
+{
+	"prompt": "Your configured instruction + note text",
+	"note_id": "unique_identifier",
+	"timestamp": "2025-12-09T14:22:33Z"
+}
+```
+
+### Quick tests
+Happy path:
+```bash
+curl -X POST "http://localhost:3000/api/speakspace-action" \
+ -H "Content-Type: application/json" \
+ -H "Authorization: Bearer $SS_API_KEY" \
+ -d '{"prompt":"This is my note text...", "note_id":"abc123", "timestamp":"2025-12-09T14:22:33Z"}'
+```
+
+Auth fail (expect 401):
+```bash
+curl -X POST "http://localhost:3000/api/speakspace-action" \
+ -H "Content-Type: application/json" \
+ -d '{"prompt":"bad", "note_id":"abc123", "timestamp":"2025-12-09T14:22:33Z"}'
+```
+
+Payload validation fail (missing fields -> 400):
+```bash
+curl -X POST "http://localhost:3000/api/speakspace-action" \
+ -H "Content-Type: application/json" \
+ -H "Authorization: Bearer $SS_API_KEY" \
+ -d '{"prompt":"only prompt"}'
+```
