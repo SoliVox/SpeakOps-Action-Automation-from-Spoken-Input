@@ -1,11 +1,13 @@
 import "dotenv/config";
 import express from "express";
-import bodyParser from "body-parser";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
+import { logger, requestLogger, metrics } from "./middleware/logger.js";
+import { routeWorkflow } from "./workflows/index.js";
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(requestLogger(logger));
 
 const API_KEY = process.env.SS_API_KEY || "";
 const PORT = process.env.PORT || 3000;
@@ -26,58 +28,54 @@ const payloadSchema = z.object({
 });
 
 function checkAuth(req, res, next) {
-  const bearer = req.header("Authorization");
-  const apiKey = req.header("x-api-key");
-  const bearerToken = bearer?.startsWith("Bearer ") ? bearer.slice(7) : null;
-  const provided = bearerToken || apiKey;
-  if (!API_KEY) {
-    console.warn("API key not configured; rejecting request");
-    return res.status(500).json({ status: "error", message: "Server auth not configured" });
-  }
-  if (provided && provided === API_KEY) return next();
-  return res.status(401).json({ status: "error", message: "Unauthorized" });
+  const auth = req.header("Authorization");
+  const token = auth?.startsWith("Bearer ") ? auth.slice(7) : req.header("x-api-key");
+  
+  if (!API_KEY) return res.status(500).json({ status: "error", message: "Server auth not configured" });
+  if (token === API_KEY) return next();
+  
+  res.status(401).json({ status: "error", message: "Unauthorized" });
 }
 
-app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+app.get("/metrics", (_req, res) => res.json(metrics.getMetrics()));
 
 app.post("/api/speakspace-action", checkAuth, async (req, res) => {
+  const startTime = Date.now();
+  metrics.increment("requests.total");
+  
   try {
-    const parsed = payloadSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ status: "error", message: "Invalid payload", details: parsed.error.issues });
+    const { success, data, error } = payloadSchema.safeParse(req.body);
+    if (!success) {
+      metrics.increment("requests.validation_failed");
+      logger.warn("Validation failed", { errors: error.issues });
+      return res.status(400).json({ status: "error", message: "Invalid payload", details: error.issues });
     }
-    const { prompt, note_id, timestamp } = parsed.data;
 
-    const processed = await processPrompt(prompt, note_id, timestamp);
-    await doSideEffects(processed);
+    logger.info("Processing voice note", { note_id: data.note_id });
+    
+    // Get workflow type from header or default to generic
+    const workflowType = req.header("X-Workflow-Type") || process.env.DEFAULT_WORKFLOW || "generic";
+    
+    const processed = await routeWorkflow(workflowType, data.prompt, data.note_id, data.timestamp);
+    
+    metrics.increment("requests.success");
+    const duration = Date.now() - startTime;
+    logger.info("Workflow completed", { note_id: data.note_id, duration: `${duration}ms`, workflowType });
 
-    return res.status(200).json({ status: "success", message: "Workflow executed" });
+    res.json({ status: "success", message: "Workflow executed", result: processed });
   } catch (err) {
-    console.error("Processing error:", err);
-    return res.status(500).json({ status: "error", message: "Internal server error" });
+    metrics.increment("requests.error");
+    logger.error("Processing error", { error: err.message, stack: err.stack });
+    res.status(500).json({ status: "error", message: "Internal server error" });
   }
 });
 
-async function processPrompt(prompt, noteId, timestamp) {
-  // placeholder for LLM/transcription/template logic
-  return {
-    noteId,
-    timestamp,
-    promptSnippet: prompt.slice(0, 200),
-  };
-}
+app.use((req, res) => res.status(404).json({ status: "error", message: "Not found" }));
 
-async function doSideEffects(processed) {
-  // stub: write to DB, call WordPress/Notion/Asana APIs, enqueue jobs, etc.
-  void processed;
-}
-
-app.use((req, res) => {
-  res.status(404).json({ status: "error", message: "Not found" });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server ready on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => logger.info(`Server ready on http://localhost:${PORT}`))
+  .on("error", (err) => {
+    logger.error("Server error", { error: err.message });
+    process.exit(1);
+  });

@@ -2,215 +2,150 @@
 
 SpeakOps transforms spoken voice notes into automated actions. Using a custom SpeakSpace Action, it processes note text, extracts key details, and triggers workflows like task updates, content generation, or system actions—turning everyday speech into fast, efficient automation.
 
-## Step-by-step implementation guide — SpeakSpace Custom Action
+## Quick Start
 
-The sequence below takes you from idea to working demo and submission-ready deliverables.
+```bash
+# Clone and install
+git clone https://github.com/SoliVox/SpeakOps-Action-Automation-from-Spoken-Input.git
+cd SpeakOps-Action-Automation-from-Spoken-Input
+npm install
 
-### 1) High-level architecture
-- **Mobile (SpeakSpace)**: user selects an action and a voice note; the app POSTs `{ prompt, note_id, timestamp }` to your API.
-- **API Gateway/Auth**: validates auth (Bearer token or x-api-key) and forwards to processing.
-- **Processing Service**: fetches note/transcript, applies prompt template, triggers workflows (DB updates, HTTP calls, publishing, task creation, etc.).
-- **Optional**: transcription (Whisper/STS), LLM/NLP for summarization/extraction, storage for logs/audit, webhooks to WordPress/Notion/Asana.
-- **Response**: minimal JSON `{ status, message }`; keep details in internal logs.
+# Configure environment
+cp .env.example .env
+# Edit .env and set SS_API_KEY=your-secret-key
 
-### 2) API contract
-**Request (SpeakSpace -> your API)**
-
-`POST /api/speakspace-action`
-
-Headers:
-- `Content-Type: application/json`
-- `Authorization: Bearer <token>` **or** `x-api-key: <key>`
-
-Body:
-```json
-{
-	"prompt": "Your configured instruction + note text",
-	"note_id": "unique_identifier",
-	"timestamp": "2025-12-09T14:22:33Z"
-}
+# Start server
+npm run dev    # development (auto-reload)
+npm start      # production
 ```
 
-**Success response**
-```json
-{"status":"success","message":"Workflow executed"}
+Server runs on `http://localhost:3000`
+
+## API Endpoints
+
+### Health Check
+```bash
+curl http://localhost:3000/health
+# Response: {"status":"ok"}
 ```
 
-**Errors**
-- 400 invalid payload
-- 401/403 auth failure
-- 422 processing error (e.g., transcription failed)
-- 500 internal error (log details internally, keep response minimal)
+### Metrics
+```bash
+curl http://localhost:3000/metrics
+# Response: {"counters":{...},"uptime":123.45,"memory":{...}}
+```
 
-### 3) Minimal Node.js/Express example
-```js
-// index.js
-import express from "express";
-import bodyParser from "body-parser";
-import fetch from "node-fetch"; // or native fetch in Node 18+
-import rateLimit from "express-rate-limit";
+### Process Voice Note
+```bash
+curl -X POST "http://localhost:3000/api/speakspace-action" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "X-Workflow-Type: blog_post" \
+  -d '{
+    "prompt": "Convert this to a blog post",
+    "note_id": "abc123",
+    "timestamp": "2025-12-09T14:22:33Z"
+  }'
+```
 
-const app = express();
-app.use(bodyParser.json());
+**Workflow Types**: `blog_post`, `task_extraction`, `meeting_notes`, `email_draft`, or omit for generic processing.
 
-// simple header auth - config via ENV
-const API_KEY = process.env.SS_API_KEY || "replace_me";
+## SpeakSpace Configuration
 
-const limiter = rateLimit({ windowMs: 60_000, max: 60 });
-app.use(limiter);
+- **API URL**: `https://your-deployment.com/api/speakspace-action`
+- **Auth Header**: `Authorization: Bearer YOUR_API_KEY` or `x-api-key: YOUR_API_KEY`
+- **Prompt Template**: `Convert the following voice note into a 600–800 word SEO-friendly blog post: $PROMPT`
 
-function checkAuth(req, res, next) {
-	const bearer = req.header("Authorization");
-	const apiKey = req.header("x-api-key");
-	if ((bearer && bearer.startsWith("Bearer ")) || apiKey === API_KEY) {
-		return next();
-	}
-	return res.status(401).json({ status: "error", message: "Unauthorized" });
-}
+## Architecture
 
-app.post("/api/speakspace-action", checkAuth, async (req, res) => {
-	try {
-		const { prompt, note_id, timestamp } = req.body;
-		if (!prompt || !note_id || !timestamp) {
-			return res.status(400).json({ status: "error", message: "Missing fields" });
-		}
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for system design and flow diagrams.
 
-		// 1) Optionally fetch raw audio or transcript using note_id
-		// 2) Run NLP/LLM pipeline
-		const processed = await processPrompt(prompt, note_id);
+## Deployment
 
-		// 3) Perform side effects (DB write / post to WordPress / create tasks)
-		// await doSideEffects(processed);
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for platform-specific deployment guides (Render, Heroku, Cloud Run, Vercel).
 
-		return res.status(200).json({ status: "success", message: "Workflow executed" });
-	} catch (err) {
-		console.error("Processing error:", err);
-		return res.status(500).json({ status: "error", message: "Internal server error" });
-	}
+## Testing
+
+Run the PowerShell test suite:
+```powershell
+.\test-api.ps1
+```
+
+Or manual curl tests:
+```bash
+# Auth failure (401)
+curl -X POST "http://localhost:3000/api/speakspace-action" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"test","note_id":"123","timestamp":"2025-12-09T14:22:33Z"}'
+
+# Validation failure (400)
+curl -X POST "http://localhost:3000/api/speakspace-action" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"missing fields"}'
+```
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SS_API_KEY` | Yes | - | API authentication key |
+| `PORT` | No | 3000 | Server port |
+| `RATE_LIMIT_PER_MIN` | No | 60 | Max requests per minute |
+| `DEFAULT_WORKFLOW` | No | generic | Default workflow type |
+| `LOG_FILE` | No | - | Path to log file (optional) |
+| `WORDPRESS_URL` | No | - | WordPress site URL |
+| `WORDPRESS_TOKEN` | No | - | WordPress auth token |
+| `NOTION_TOKEN` | No | - | Notion integration token |
+| `NOTION_DATABASE_ID` | No | - | Notion database ID |
+| `ASANA_TOKEN` | No | - | Asana access token |
+| `ASANA_WORKSPACE_ID` | No | - | Asana workspace ID |
+
+## Built-in Workflows
+
+The system includes 4 pre-built workflows you can activate via `X-Workflow-Type` header:
+
+1. **blog_post** - Voice → SEO-optimized blog post → WordPress draft
+2. **task_extraction** - Voice → Extract tasks → Create in Notion
+3. **meeting_notes** - Voice → Structured notes → Asana tasks
+4. **email_draft** - Voice → Professional email format
+
+Configure the integrations via environment variables (see `.env.example`).
+
+## Workflow Integration Examples
+
+### WordPress Publishing
+Add to `doSideEffects()`:
+```javascript
+const response = await fetch('https://yoursite.com/wp-json/wp/v2/posts', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer WP_TOKEN', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ title: 'Title', content: processed.promptSnippet, status: 'draft' })
 });
-
-async function processPrompt(prompt, note_id) {
-	// stub: enrich prompt (transcription, templates, LLM)
-	return { note_id, prompt_snippet: prompt.slice(0, 200) };
-}
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log("Server ready on", port));
 ```
 
-Notes: keep secrets in env, add structured logging/monitoring, retry/backoff downstream calls.
-
-### 4) Prompt template best practices
-- Use persistent templates with `$PROMPT` placeholder.
-- Example (voice -> WordPress blog):
-	- Template: `Convert the following voice note into a 600–800 word SEO-friendly blog post with H2 headings and a meta description: $PROMPT`
-- Extractive/structured tasks: request JSON output, e.g. `[{"task":"...","owner":"...","due":"YYYY-MM-DD"}]`.
-
-### 5) SpeakSpace configuration example
-- **Title**: Publish to WordPress
-- **Description**: Convert voice note into a formatted blog post and draft on WordPress.
-- **Prompt Template**: `Convert the following voice note into a 600–800 word SEO-friendly blog post with H2 headings and a meta description: $PROMPT`
-- **Notes Selector**: user chooses
-- **API URL**: `https://yourservice.com/api/speakspace-action`
-- **Auth**: `Authorization: Bearer <token>` or `x-api-key: <key>`
-
-**cURL test**
-```bash
-curl -X POST "https://yourservice.com/api/speakspace-action" \
- -H "Content-Type: application/json" \
- -H "Authorization: Bearer $MY_TOKEN" \
- -d '{"prompt":"This is my note text...", "note_id":"abc123", "timestamp":"2025-12-09T14:22:33Z"}'
+### Notion Task Creation
+```javascript
+await fetch('https://api.notion.com/v1/pages', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer NOTION_TOKEN', 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ parent: { database_id: 'DB_ID' }, properties: { Name: { title: [{ text: { content: 'Task' } }] } } })
+});
 ```
 
-### 6) Security and operational hygiene
-- Prefer Bearer tokens or HMAC signed payloads; rotate keys, keep secrets in env/secret manager.
-- Rate-limit public endpoints; enforce HTTPS/TLS.
-- Strict JSON schema validation; redact PII in logs; keep idempotency keys and replay protection (timestamp skew + seen set on note_id).
-- Add health checks and minimal surface area; least-privilege credentials.
+## Tech Stack
 
-### 7) Workflow examples
-- WordPress publishing: transcribe -> LLM -> WordPress REST draft.
-- Task creation (Asana/Notion): extract JSON actions -> create tasks -> return confirmation.
-- Medication reminder: extract medication + schedule -> create calendar/reminder entries.
-- Accessibility audit: spoken site description -> checklist JSON -> email stakeholder.
+- **Express** - Web framework
+- **Zod** - Schema validation
+- **express-rate-limit** - Rate limiting
+- **dotenv** - Environment configuration
 
-### 8) Testing and QA
-- Unit: `processPrompt`, schema validation.
-- Integration: POST sample notes (SpeakSpace-like payloads), assert 200 + side effects.
-- E2E: simulate mobile flow via curl/Postman; include auth success/failure paths.
-- Error-path tests: transcription fail, 3rd-party API error, auth failure.
-- Observability: structured logs, Sentry, Prometheus metrics.
+## License
 
-### 9) Deployment and infra
-- Containerize (Docker). Host on Render/Heroku/Vercel (serverless)/Cloud Run/ECS.
-- Managed secrets (AWS/GCP Secret Manager). HTTPS behind CDN (Cloudflare).
-- Health/readiness endpoints; stateless workers; consider queue if heavy LLM/transcription.
+MIT - see [LICENSE](./LICENSE)
 
-### 10) Documentation and demo materials
-- README: setup, env vars, run, test, endpoints.
-- Architecture diagram (PNG or ASCII) and short demo script (curl + expected output).
-- 1–2 minute video: mobile selection -> server logs -> final result (WordPress draft/Notion task).
-- Security notes: auth, logging/redaction policy.
-- Open-source list: libs/frameworks used and why.
+## Submission Resources
 
-### 11) Judging criteria mapping
-- Innovation & complexity: unique use-case, context-aware prompts, multi-step automation, ML/NLP usage.
-- Real-world viability: scalable design, clear user flow, adoption point.
-- Technical execution: clean code, error handling, tests, security.
-- Open-source usage: sensible frameworks (Whisper, Express, fetch, etc.).
-- Documentation & presentation: README, demo video, easy reproduction steps.
-
-### 12) Suggested deliverables
-- Repo link with code and README, sample env file.
-- Demo video (1–2 minutes).
-- Architecture/flow diagram.
-- One-page rubric mapping.
-- Optional: live demo URL + short-lived test credentials.
-
-### 13) Quick submission checklist
-- API 200 on happy path.
-- Auth works and documented.
-- Template examples in README.
-- Tests + sample curl included.
-- Demo video ready highlighting workflow.
-- Rubric mapping prepared.
-
-## Local setup and run
-- `cp .env.example .env` and set `SS_API_KEY`, `PORT` (optional), `RATE_LIMIT_PER_MIN` (optional).
-- `npm install`
-- `npm run dev` (reloads on change) or `npm start`.
-
-### Endpoints
-- `GET /health` → `{ status: "ok" }`
-- `POST /api/speakspace-action` with headers `Authorization: Bearer <token>` or `x-api-key: <key>` and body:
-```json
-{
-	"prompt": "Your configured instruction + note text",
-	"note_id": "unique_identifier",
-	"timestamp": "2025-12-09T14:22:33Z"
-}
-```
-
-### Quick tests
-Happy path:
-```bash
-curl -X POST "http://localhost:3000/api/speakspace-action" \
- -H "Content-Type: application/json" \
- -H "Authorization: Bearer $SS_API_KEY" \
- -d '{"prompt":"This is my note text...", "note_id":"abc123", "timestamp":"2025-12-09T14:22:33Z"}'
-```
-
-Auth fail (expect 401):
-```bash
-curl -X POST "http://localhost:3000/api/speakspace-action" \
- -H "Content-Type: application/json" \
- -d '{"prompt":"bad", "note_id":"abc123", "timestamp":"2025-12-09T14:22:33Z"}'
-```
-
-Payload validation fail (missing fields -> 400):
-```bash
-curl -X POST "http://localhost:3000/api/speakspace-action" \
- -H "Content-Type: application/json" \
- -H "Authorization: Bearer $SS_API_KEY" \
- -d '{"prompt":"only prompt"}'
-```
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment guides
+- [SUBMISSION_CHECKLIST.md](./SUBMISSION_CHECKLIST.md) - Hackathon checklist
