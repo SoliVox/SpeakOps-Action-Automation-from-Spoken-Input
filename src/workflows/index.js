@@ -19,7 +19,7 @@ export async function workflowBlogPost(prompt, noteId) {
   });
   
   // Pull out the title from the first line (usually starts with #)
-  const lines = blogContent.split('\n').filter(l => l.trim());
+  const lines = llmResponse.split('\n').filter(l => l.trim());
   const title = lines[0].replace(/^#\s*/, '').replace(/<\/?[^>]+(>|$)/g, '').slice(0, 100);
   const content = llmResponse;
   

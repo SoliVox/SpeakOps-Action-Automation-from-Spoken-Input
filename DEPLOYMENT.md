@@ -108,3 +108,12 @@ All platforms above provide automatic HTTPS. For custom domains:
 - Render: Add custom domain in dashboard
 - Heroku: `heroku certs:auto:enable`
 - Cloud Run: Map custom domain in GCP Console
+
+## Troubleshooting
+
+If you encounter issues, check:
+
+- Logs: `npm run logs` or platform-specific logs
+- Environment variables: Ensure all required vars are set
+- API keys: Regenerate and update keys if you see errors like
+  `OpenAI API error: 401 Incorrect API key provided: sk-proj-****************`

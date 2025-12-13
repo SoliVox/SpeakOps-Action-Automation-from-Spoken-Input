@@ -49,6 +49,11 @@ export async function callOpenAI(prompt, options = {}) {
     return completion.choices[0].message.content;
   } catch (error) {
     console.error("OpenAI API error:", error.message);
+    // If it's an auth error (401), fall back to mock response instead of crashing
+    if (error.status === 401 || error.message.includes("API key")) {
+      console.warn("Invalid API key, falling back to mock response");
+      return generateMockResponse(prompt);
+    }
     throw new Error(`LLM processing failed: ${error.message}`);
   }
 }
