@@ -456,10 +456,12 @@
 
                 const data = await callAPI('blog_post', input);
                 
-                const blogData = data.result.result;
+                const blogData = data.result.result || data.result || {};
+                const title = blogData.title || 'Blog Post';
+                const blogContent = blogData.content || 'No content generated';
                 content.innerHTML = `
-                    <h2 style="color: #1f2937; margin-bottom: 15px;">${blogData.title}</h2>
-                    <div style="line-height: 1.8;">${blogData.content.replace(/\n/g, '<br>')}</div>
+                    <h2 style="color: #1f2937; margin-bottom: 15px;">${title}</h2>
+                    <div style="line-height: 1.8;">${blogContent.replace(/\n/g, '<br>')}</div>
                 `;
                 
                 result.classList.add('show', 'success');
@@ -566,8 +568,9 @@
 
                 const data = await callAPI('email_draft', input);
                 
-                const email = data.result.email_draft;
-                content.innerHTML = `<pre>${email}</pre>`;
+                const email = data.result.email || {};
+                const emailText = email.subject ? `Subject: ${email.subject}\n\n${email.body}` : (email.body || 'No email generated');
+                content.innerHTML = `<pre>${emailText}</pre>`;
                 
                 result.classList.add('show', 'success');
             } catch (error) {
