@@ -6,7 +6,60 @@
 
 SpeakOps transforms spoken voice notes into automated actions. Using a custom SpeakSpace Action, it processes note text, extracts key details, and triggers workflows like task updates, content generation, or system actions—turning everyday speech into fast, efficient automation.
 
-**🚀 [Quick Deploy Guide](./DEPLOY_NOW.md)** | **📖 [Full Documentation](#documentation)**
+**🎥 [Demo Video](#)** | **🌐 [Live Demo](https://speakops-action-automation-from-spoken.onrender.com)** | **🚀 [Quick Deploy Guide](./DEPLOY_NOW.md)** | **📖 [Full Documentation](#documentation)**
+
+## 🎯 For Hackathon Judges
+
+### Quick Test (No Setup Required)
+Visit our **live web interface**: [https://speakops-action-automation-from-spoken.onrender.com](https://speakops-action-automation-from-spoken.onrender.com)
+
+Try these workflows instantly:
+1. **Blog Post Generator** - Enter an idea, get a full GPT-4 generated article
+2. **Task Extractor** - Paste notes, extract structured tasks
+3. **Meeting Notes** - Transform transcripts into organized summaries
+4. **Email Drafter** - Voice ideas → professional emails
+
+### API Testing (curl)
+```bash
+# Test live API endpoint
+curl https://speakops-action-automation-from-spoken.onrender.com/health
+
+# Generate blog post with GPT-4
+curl -X POST "https://speakops-action-automation-from-spoken.onrender.com/api/speakspace-action" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer demo_secret_key_12345" \
+  -H "X-Workflow-Type: blog_post" \
+  -d '{
+    "prompt": "Write about AI automation in content creation",
+    "note_id": "judge_test_123",
+    "timestamp": "2025-01-15T10:30:00Z"
+  }'
+```
+
+### Ready-to-Use SpeakSpace Configuration
+Copy and paste this into SpeakSpace mobile app:
+
+```json
+{
+  "name": "SpeakOps Blog Generator",
+  "method": "POST",
+  "url": "https://speakops-action-automation-from-spoken.onrender.com/api/speakspace-action",
+  "headers": {
+    "Authorization": "Bearer demo_secret_key_12345",
+    "X-Workflow-Type": "blog_post",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "prompt": "{{note_text}}",
+    "note_id": "{{note_id}}",
+    "timestamp": "{{timestamp}}"
+  }
+}
+```
+
+Available workflow types: `blog_post` | `task_extraction` | `meeting_notes` | `email_draft`
+
+---
 
 ## Quick Start
 
