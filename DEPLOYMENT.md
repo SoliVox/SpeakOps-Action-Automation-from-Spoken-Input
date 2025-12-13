@@ -1,23 +1,24 @@
-# Deployment Guide
+# Deploying This Thing
 
-## Quick Deploy Options
+## Where to Host
 
-### 1. Render (Recommended - Free Tier Available)
+### Render (easiest + free)
 
-1. Push code to GitHub
-2. Go to [render.com](https://render.com) → New Web Service
-3. Connect your repo: `SoliVox/SpeakOps-Action-Automation-from-Spoken-Input`
+1. Push your code to GitHub
+2. Go to [render.com](https://render.com), make an account
+3. New Web Service → connect your repo
 4. Settings:
-   - **Environment**: Node
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-   - **Environment Variables**:
-     - `SS_API_KEY`: your-secret-key
-     - `PORT`: 3000
-     - `RATE_LIMIT_PER_MIN`: 60
-5. Deploy → get your URL: `https://your-app.onrender.com`
+   - Environment: Node
+   - Build: `npm install`
+   - Start: `npm start`
+   - Add env vars: `SS_API_KEY`, `PORT`, etc.
+5. Hit deploy, wait a minute, done
 
-### 2. Heroku
+Your URL: `https://whatever-name.onrender.com`
+
+### Heroku
+
+Classic option, also has free tier:
 
 ```bash
 # Install Heroku CLI, then:
@@ -65,9 +66,9 @@ vercel env add SS_API_KEY
 - Create ECS task definition with env vars
 - Configure ALB with HTTPS
 
-## Post-Deployment
+## After Deployment
 
-1. **Test health check**:
+Make sure it works:
    ```bash
    curl https://your-url.com/health
    ```
@@ -84,12 +85,12 @@ vercel env add SS_API_KEY
    - API URL: `https://your-url.com/api/speakspace-action`
    - Auth: `Authorization: Bearer YOUR_KEY`
 
-## Environment Variables
+## Env Vars
 
-Required:
-- `SS_API_KEY` - API authentication key
+**Must have:**
+- `SS_API_KEY` - your API key (make it random)
 
-Optional:
+**Optional:**
 - `PORT` - Server port (default: 3000)
 - `RATE_LIMIT_PER_MIN` - Max requests per minute (default: 60)
 - `NODE_ENV` - Set to `production` for prod deployments

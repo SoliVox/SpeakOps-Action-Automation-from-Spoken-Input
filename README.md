@@ -8,7 +8,7 @@ SpeakOps transforms spoken voice notes into automated actions. Using a custom Sp
 
 **� Live Demo**: https://speakops-action-automation-from-spoken.onrender.com
 
-## 🎯 Quick Test (For Judges)
+## Quick Test 
 
 Just open the **[live web interface](https://speakops-action-automation-from-spoken.onrender.com)** - no setup needed!
 

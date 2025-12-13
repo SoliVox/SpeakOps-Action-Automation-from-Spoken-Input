@@ -1,6 +1,8 @@
-# SpeakOps Architecture
+# How SpeakOps Works
 
-## System Flow
+## The Flow
+
+Pretty straightforward: SpeakSpace sends voice notes → our API processes them → GPT-4 does the magic → we send it to wherever you need (WordPress, Notion, etc).
 
 ```
 ┌─────────────────┐
@@ -43,26 +45,26 @@
 └─────────────────┘
 ```
 
-## Components
+## Main Parts
 
-### 1. API Layer (`src/server.js`)
-- Express.js REST endpoint
-- Auth middleware (Bearer/x-api-key)
-- Rate limiting (express-rate-limit)
-- Payload validation (Zod schema)
+**API Layer** (`src/server.js`)
+- Express handles requests
+- Auth checks (Bearer token or x-api-key)
+- Rate limiting so nobody ddos's us
+- Validates payloads with Zod
 
-### 2. Processing Logic
-- `processPrompt()`: Template application, LLM calls
-- `doSideEffects()`: Downstream integrations
+**Processing**
+- `processPrompt()` - templates + GPT-4 calls
+- `doSideEffects()` - sends stuff to other services
 
-### 3. Deployment Options
-- **Containerized**: Docker → Cloud Run / ECS / Render
-- **Serverless**: Vercel Functions / AWS Lambda
-- **Traditional**: Heroku / Railway
+**Deployment**
+- Docker works anywhere (Cloud Run, ECS, Render)
+- Serverless options (Vercel, Lambda)
+- Regular hosting (Heroku, Railway)
 
-## Security
-- Env-based secrets (`.env`)
-- HTTPS/TLS enforcement
-- Request validation
-- Rate limiting
-- PII redaction in logs
+## Security Stuff
+- Secrets in `.env` (never commit these)
+- HTTPS everywhere
+- Validates all requests
+- Rate limits to prevent abuse
+- Redacts sensitive info from logs
