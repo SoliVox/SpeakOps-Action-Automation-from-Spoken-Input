@@ -2,10 +2,19 @@ import "dotenv/config";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import { logger, requestLogger, metrics } from "./middleware/logger.js";
 import { routeWorkflow } from "./workflows/index.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
+
+// Serve static frontend files
+app.use(express.static(join(__dirname, "../public")));
+
 app.use(express.json());
 app.use(requestLogger(logger));
 
