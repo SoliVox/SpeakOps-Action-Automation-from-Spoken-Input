@@ -46,6 +46,10 @@ function checkAuth(req, res, next) {
   res.status(401).json({ status: "error", message: "Unauthorized" });
 }
 
+app.get("/", (_req, res) => {
+  res.sendFile(join(__dirname, "../public/index.html"));
+});
+
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.get("/metrics", (_req, res) => res.json(metrics.getMetrics()));
