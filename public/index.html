@@ -491,7 +491,7 @@
 
                 const data = await callAPI('task_extraction', input);
                 
-                const tasks = data.result.tasks;
+                const tasks = data.result.tasks || [];
                 let html = `<p><strong>Found ${tasks.length} tasks:</strong></p><ul class="task-list">`;
                 tasks.forEach((task, i) => {
                     html += `

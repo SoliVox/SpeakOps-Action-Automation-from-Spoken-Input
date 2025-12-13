@@ -80,7 +80,7 @@ export async function workflowTaskExtraction(prompt, noteId) {
     }
   }
   
-  return { noteId, workflowType: "task_extraction", taskCount: tasks.length, notionPages: results };
+  return { noteId, workflowType: "task_extraction", taskCount: tasks.length, tasks, notionPages: results };
 }
 
 /**
