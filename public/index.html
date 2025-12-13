@@ -534,7 +534,7 @@
 
                 const data = await callAPI('meeting_notes', input);
                 
-                const notes = data.result.summary;
+                const notes = data.result.summary || 'No summary generated';
                 content.innerHTML = `<pre>${notes}</pre>`;
                 
                 result.classList.add('show', 'success');

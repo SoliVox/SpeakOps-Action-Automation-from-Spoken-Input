@@ -125,7 +125,7 @@ export async function workflowMeetingNotes(prompt, noteId) {
     }
   }
   
-  return { noteId, workflowType: "meeting_notes", actionItems: actionItems.length, asanaTasks: results };
+  return { noteId, workflowType: "meeting_notes", summary: structuredNotes, actionItems, asanaTasks: results };
 }
 
 /**
