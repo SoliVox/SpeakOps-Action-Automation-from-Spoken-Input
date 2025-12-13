@@ -6,25 +6,24 @@
 
 SpeakOps transforms spoken voice notes into automated actions. Using a custom SpeakSpace Action, it processes note text, extracts key details, and triggers workflows like task updates, content generation, or system actions—turning everyday speech into fast, efficient automation.
 
-**🎥 [Demo Video](#)** | **🌐 [Live Demo](https://speakops-action-automation-from-spoken.onrender.com)** | **🚀 [Quick Deploy Guide](./DEPLOY_NOW.md)** | **📖 [Full Documentation](#documentation)**
+**� Live Demo**: https://speakops-action-automation-from-spoken.onrender.com
 
-## 🎯 For Hackathon Judges
+## 🎯 Quick Test (For Judges)
 
-### Quick Test (No Setup Required)
-Visit our **live web interface**: [https://speakops-action-automation-from-spoken.onrender.com](https://speakops-action-automation-from-spoken.onrender.com)
+Just open the **[live web interface](https://speakops-action-automation-from-spoken.onrender.com)** - no setup needed!
 
-Try these workflows instantly:
-1. **Blog Post Generator** - Enter an idea, get a full GPT-4 generated article
-2. **Task Extractor** - Paste notes, extract structured tasks
-3. **Meeting Notes** - Transform transcripts into organized summaries
-4. **Email Drafter** - Voice ideas → professional emails
+Try these workflows:
+- **Blog Post** - throw an idea at it, get a full article back
+- **Task Extractor** - paste meeting notes, extract actionable tasks
+- **Meeting Notes** - transform messy transcripts into clean summaries  
+- **Email Draft** - voice ideas → polished professional emails
 
-### API Testing (curl)
+### Want to test the API directly?
 ```bash
-# Test live API endpoint
+# Check if it's alive
 curl https://speakops-action-automation-from-spoken.onrender.com/health
 
-# Generate blog post with GPT-4
+# Generate a blog post using GPT-4
 curl -X POST "https://speakops-action-automation-from-spoken.onrender.com/api/speakspace-action" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer demo_secret_key_12345" \
@@ -36,8 +35,8 @@ curl -X POST "https://speakops-action-automation-from-spoken.onrender.com/api/sp
   }'
 ```
 
-### Ready-to-Use SpeakSpace Configuration
-Copy and paste this into SpeakSpace mobile app:
+### SpeakSpace Config (Copy-Paste Ready)
+Just drop this into the SpeakSpace app:
 
 ```json
 {
@@ -57,11 +56,11 @@ Copy and paste this into SpeakSpace mobile app:
 }
 ```
 
-Available workflow types: `blog_post` | `task_extraction` | `meeting_notes` | `email_draft`
+**Workflows**: `blog_post`, `task_extraction`, `meeting_notes`, `email_draft`
 
 ---
 
-## Quick Start
+## Setup
 
 ```bash
 # Clone and install
@@ -163,16 +162,16 @@ curl -X POST "http://localhost:3000/api/speakspace-action" \
 
 **Note**: Without `OPENAI_API_KEY`, workflows return mock responses. Get your API key at https://platform.openai.com/api-keys
 
-## Built-in Workflows
+## What It Does
 
-The system includes 4 pre-built workflows you can activate via `X-Workflow-Type` header:
+4 workflows built-in (use the `X-Workflow-Type` header):
 
-1. **blog_post** - Voice → SEO-optimized blog post → WordPress draft
-2. **task_extraction** - Voice → Extract tasks → Create in Notion
-3. **meeting_notes** - Voice → Structured notes → Asana tasks
-4. **email_draft** - Voice → Professional email format
+- **blog_post** - voice note → SEO blog post → WordPress
+- **task_extraction** - voice note → extract tasks → Notion
+- **meeting_notes** - voice note → clean notes → Asana
+- **email_draft** - voice ideas → professional email
 
-Configure the integrations via environment variables (see `.env.example`).
+Just set the right env vars and you're good (check `.env.example`).
 
 ## Workflow Integration Examples
 
@@ -206,14 +205,10 @@ await fetch('https://api.notion.com/v1/pages', {
 
 MIT - see [LICENSE](./LICENSE)
 
-## Documentation
+## More Docs
 
-- 📋 [ARCHITECTURE.md](./ARCHITECTURE.md) - System design & flow
-- 🚀 [DEPLOYMENT.md](./DEPLOYMENT.md) - Platform deployment guides
-- 🔧 [WORKFLOWS.md](./WORKFLOWS.md) - Workflow configuration
-- ✅ [SUBMISSION_CHECKLIST.md](./SUBMISSION_CHECKLIST.md) - Hackathon checklist
-- 📊 [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Implementation status
-- ⚡ [DEPLOY_NOW.md](./DEPLOY_NOW.md) - Quick Render deployment
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - how everything works
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - deploy to various platforms
 
 ## Contributing
 
@@ -221,4 +216,4 @@ Issues and pull requests welcome! See [GitHub repository](https://github.com/Sol
 
 ---
 
-**Built with** Express, Zod, OpenAI • **Deployed on** Render • **Made for** SpeakSpace Hackathon 2025
+Built with Express + Zod + OpenAI GPT-4 • Deployed on Render • Made for SpeakSpace Hackathon
