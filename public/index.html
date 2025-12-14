@@ -460,9 +460,22 @@
                 let title = blogData.title || 'Blog Post';
                 let blogContent = blogData.content || 'No content generated';
                 
-                // Strip markdown code blocks
-                title = title.replace(/```[\s\S]*?```/g, '').replace(/`/g, '').trim();
-                blogContent = blogContent.replace(/```[\s\S]*?```/g, '').replace(/`/g, '').trim();
+                // Aggressively strip all markdown artifacts
+                title = title
+                    .replace(/```html\s*/gi, '')
+                    .replace(/```[\w]*\s*/g, '')
+                    .replace(/```/g, '')
+                    .replace(/`/g, '')
+                    .replace(/^\s*html\s*/i, '')
+                    .trim();
+                
+                blogContent = blogContent
+                    .replace(/```html\s*/gi, '')
+                    .replace(/```[\w]*\s*/g, '')
+                    .replace(/```/g, '')
+                    .replace(/`/g, '')
+                    .replace(/^\s*html\s*/im, '')
+                    .trim();
                 
                 content.innerHTML = `
                     <h2 style="color: #1f2937; margin-bottom: 15px;">${title}</h2>
