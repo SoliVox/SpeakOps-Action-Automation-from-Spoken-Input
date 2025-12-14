@@ -475,6 +475,7 @@
                     .replace(/```/g, '')
                     .replace(/`/g, '')
                     .replace(/^\s*html\s*/im, '')
+                    .replace(/\n{3,}/g, '\n\n')  // Collapse multiple newlines to max 2
                     .trim();
                 
                 content.innerHTML = `
