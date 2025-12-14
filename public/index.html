@@ -457,8 +457,13 @@
                 const data = await callAPI('blog_post', input);
                 
                 const blogData = data.result.result || data.result || {};
-                const title = blogData.title || 'Blog Post';
-                const blogContent = blogData.content || 'No content generated';
+                let title = blogData.title || 'Blog Post';
+                let blogContent = blogData.content || 'No content generated';
+                
+                // Strip markdown code blocks
+                title = title.replace(/```[\s\S]*?```/g, '').replace(/`/g, '').trim();
+                blogContent = blogContent.replace(/```[\s\S]*?```/g, '').replace(/`/g, '').trim();
+                
                 content.innerHTML = `
                     <h2 style="color: #1f2937; margin-bottom: 15px;">${title}</h2>
                     <div style="line-height: 1.8;">${blogContent.replace(/\n/g, '<br>')}</div>
