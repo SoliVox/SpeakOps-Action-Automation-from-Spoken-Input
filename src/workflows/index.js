@@ -14,14 +14,21 @@ export async function workflowBlogPost(prompt, noteId) {
   
   // Call LLM to generate blog content
   const llmResponse = await callOpenAI(enrichedPrompt, {
-    systemPrompt: "You are an expert content writer. Generate SEO-optimized blog posts with proper HTML formatting.",
+    systemPrompt: "You are an expert content writer. Generate SEO-optimized blog posts. Return only the blog content without any markdown code blocks or formatting markers.",
     maxTokens: 2500,
   });
   
+  // Clean up markdown code blocks and backticks
+  let cleanedResponse = llmResponse
+    .replace(/```[\s\S]*?```/g, '')  // Remove code blocks
+    .replace(/```/g, '')              // Remove stray code fence markers
+    .replace(/`/g, '')                // Remove backticks
+    .trim();
+  
   // Pull out the title from the first line (usually starts with #)
-  const lines = llmResponse.split('\n').filter(l => l.trim());
+  const lines = cleanedResponse.split('\n').filter(l => l.trim());
   const title = lines[0].replace(/^#\s*/, '').replace(/<\/?[^>]+(>|$)/g, '').slice(0, 100);
-  const content = llmResponse;
+  const content = cleanedResponse;
   
   const blogContent = { title, content };
   
